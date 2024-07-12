@@ -1,0 +1,12 @@
+/* src/index.css */
+
+.components {
+  width: 20%;
+  background-color: rgb(145, 86, 86);
+  border-right: 1px solid #ddd;
+}
+
+.canvas {
+  width: 100%;
+  background-color: #fff;
+}
