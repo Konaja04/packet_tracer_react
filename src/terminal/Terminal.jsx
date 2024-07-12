@@ -99,6 +99,13 @@ const TerminalComponent = ({ device }) => {
 
     if (input === "en") {
       setEnableState(true);
+    } else if (input === "dd") {
+      const routingTable = device.calcularRutasOptimasDijkstra() ;
+      const formattedTable = JSON.stringify(routingTable, null, 2);
+      newMessages.push({
+        user: `${device.nombre}>`,
+        text: `Tabla de enrutamiento calculada con Dijkstra:\n${formattedTable}`,
+      });
     } else {
       insertErrorCommand(newMessages, input);
     }
