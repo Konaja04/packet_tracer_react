@@ -1,17 +1,71 @@
-import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
 import DeviceList from "./components/DeviceList";
 import Canvas from "./components/Canvas";
 import { Box, Button, Typography } from "@mui/material";
-
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import CableIcon from "@mui/icons-material/Cable";
+import UploadFileIcon from "@mui/icons-material/UploadFile";  // Importar el ícono para el botón de carga
 
 function App() {
   const [cableMode, setCableMode] = useState(false);
-
+  const canvasRef = useRef(null); // Agregar estado para el archivo JSON
+  // const navigate = useNavigate();
   const toggleCableMode = () => {
     setCableMode(!cableMode);
   };
+
+  const guardarTopo = () => {
+    if (canvasRef.current) {
+      canvasRef.current.guardarTopo(true);
+    }
+  };
+
+  const cargarTopo = (archivo = null) => {
+    if (canvasRef.current) {
+      if (archivo !== null) {
+        canvasRef.current.cargarTopo(archivo);
+      } else {
+        canvasRef.current.cargarTopo();
+      }
+    }
+  };
+
+  const borrarTodo = () => {
+    if (canvasRef.current) {
+      canvasRef.current.borrarTodo();
+      // navigate(0);
+    }
+  };
+  const runDikjstra = () => {
+    if (canvasRef.current) {
+      canvasRef.current.runDijkstra();
+      // navigate(0);
+    }
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const result = JSON.parse(e.target.result);
+          console.log(result)
+          cargarTopo(result);
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  useEffect(() => {
+    if (sessionStorage.getItem("TOPO") !== null) {
+      cargarTopo();
+    }
+  }, []);
 
   return (
     <Box>
@@ -58,13 +112,71 @@ function App() {
               textTransform: "none",
               marginRight: "20px",
             }}
+            onClick={() => { runDikjstra() }}
           >
             <PlayArrowIcon />
+          </Button>
+          <Button
+            sx={{
+              backgroundColor: "#85B688",
+              width: "40px",
+              borderRadius: "25px",
+              cursor: "pointer",
+              color: "black",
+              "&:hover": {
+                backgroundColor: "#85B688",
+              },
+              textTransform: "none",
+              marginRight: "20px",
+            }}
+            onClick={() => { guardarTopo() }}
+          >
+            GUARDAR
+          </Button>
+          <Button
+            sx={{
+              backgroundColor: "#85B688",
+              width: "40px",
+              borderRadius: "25px",
+              cursor: "pointer",
+              color: "black",
+              "&:hover": {
+                backgroundColor: "#85B688",
+              },
+              textTransform: "none",
+              marginRight: "20px",
+            }}
+            component="label"
+          >
+            <UploadFileIcon />
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+          </Button>
+          <Button
+            sx={{
+              backgroundColor: "#85B688",
+              width: "40px",
+              borderRadius: "25px",
+              cursor: "pointer",
+              color: "black",
+              "&:hover": {
+                backgroundColor: "#85B688",
+              },
+              textTransform: "none",
+              marginRight: "20px",
+            }}
+            onClick={() => { borrarTodo() }}
+          >
+            BORRAR
           </Button>
         </Box>
       </Box>
 
-      <Canvas cableMode={cableMode} />
+      <Canvas ref={canvasRef} cableMode={cableMode} />
 
       <Box
         sx={{

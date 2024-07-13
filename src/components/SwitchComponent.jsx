@@ -38,7 +38,6 @@ const SwitchComponent = ({
 
 
   const handlePortSelect = (port) => {
-    console.log(selectedPortFrom);
     if (!selectedPortFrom) {
       setSelectedPortFrom({
         fromID: id,

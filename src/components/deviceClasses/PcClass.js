@@ -17,13 +17,13 @@ class PcClass extends DeviceClass {
   }
 
   setIp(ip) {
+    console.log("1asdoa")
     this.interfaces["FastEthernet0/1"].ip = ip;
   }
 
   addVecino(interfaz, dispositivo, distancia = 0) {
     if (interfaz in this.interfaces && !this.interfaces[interfaz].ocupada) {
       super.addVecino(interfaz, dispositivo, distancia);
-      this.interfaces[interfaz].ocupada = true;
     } else {
       throw new Error(`Interface ${interfaz} no existe o ya está ocupada`);
     }
@@ -36,7 +36,6 @@ class PcClass extends DeviceClass {
   }
   buscarDispositivo(origen, destinationIp) {
     if (this.interfaces["FastEthernet0/1"].ip === destinationIp) {
-      console.log(`En ${this.nombre}`);
       const replyMessage = `Reply from pc ${this.nombre} ${this.interfaces["FastEthernet0/1"].ip}: bytes=32 time<1ms TTL=128`;
       return [replyMessage, true];
     } else {
@@ -67,7 +66,14 @@ class PcClass extends DeviceClass {
     let interfacesStr = Object.values(this.interfaces)
       .map((interfaz) => interfaz.toString())
       .join("\n    ");
-    return `PC(\n    nombre=${this.nombre},\n    ${interfacesStr}\n)   Dispositivo_Conectado: ${this.vecinos}\n Distancias:\n    ${this.distancias}`;
+    return `PC(\n    nombre=${this.nombre},\n    ${interfacesStr}\n)   Dispositivo_Conectado: ${this.vecinos}\n Distancias:\n    ${this.distanciasDipositivos}`;
+  }
+  getConfig() {
+    return {
+      ip: this.interfaces["FastEthernet0/1"].ip,
+      gateway: this.interfaces["FastEthernet0/1"].gateway,
+      mascara: this.interfaces["FastEthernet0/1"].mascara,
+    };
   }
 }
 export default PcClass;

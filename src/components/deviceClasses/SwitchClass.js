@@ -76,5 +76,8 @@ class SwitchClass extends DeviceClass {
       }\n    Interfaces:\n    ${interfacesStr}\n)   Dispositivos_Conectados:${this.vecinos
       }\n Distancias:\n    ${JSON.stringify(this.distancias)}`;
   }
+  getConfig() {
+    return [];
+  }
 }
 export default SwitchClass;

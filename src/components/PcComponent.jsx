@@ -63,7 +63,6 @@ const PCComponent = ({
   };
 
   const handlePortSelect = (port) => {
-    console.log(selectedPortFrom);
     if (!selectedPortFrom) {
       setSelectedPortFrom({
         fromID: id,
@@ -151,15 +150,22 @@ const PCComponent = ({
   };
 
   useEffect(() => {
-    device.setMascara(textMascara);
+    if (textMascara !== "") {
+      device.setMascara(textMascara);
+    }
   }, [textMascara]);
 
   useEffect(() => {
-    device.setIp(textIP);
+    if (textIP !== "") {
+      console.log(textIP)
+      device.setIp(textIP);
+    }
   }, [textIP]);
 
   useEffect(() => {
-    device.setGateway(textGateway);
+    if (textGateway !== "") {
+      device.setGateway(textGateway);
+    }
   }, [textGateway]);
 
   useEffect(() => {

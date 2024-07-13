@@ -22,9 +22,6 @@ class TopologyManager {
   connectDevices = (interfaz1, device1, interfaz2, device2, distancia = 1) => {
     device1.addVecino(interfaz1, device2, distancia);
     device2.addVecino(interfaz2, device1, distancia);
-    console.log(
-      `De ${device1} por ${interfaz1} hacia ${device2} por ${interfaz2} con ${distancia}`
-    );
   };
 
   deleteDevice = (topology, nombre) => {

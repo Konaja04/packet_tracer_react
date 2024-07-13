@@ -54,7 +54,6 @@ const RouterComponent = ({
 
 
   const handlePortSelect = (port) => {
-    console.log(selectedPortFrom);
     if (!selectedPortFrom) {
       setSelectedPortFrom({
         fromID: id,
@@ -151,18 +150,22 @@ const RouterComponent = ({
     setTextMascara(event.target.value);
   };
   useEffect(() => {
-    device.configurarInterface(
-      selectedInterface,
-      device.interfaces[selectedInterface].ip,
-      textMascara
-    );
+    if (textMascara !== "") {
+      device.configurarInterface(
+        selectedInterface,
+        device.interfaces[selectedInterface].ip,
+        textMascara
+      );
+    }
   }, [textMascara]);
   useEffect(() => {
-    device.configurarInterface(
-      selectedInterface,
-      textIP,
-      device.interfaces[selectedInterface].mascara
-    );
+    if (textIP !== "") {
+      device.configurarInterface(
+        selectedInterface,
+        textIP,
+        device.interfaces[selectedInterface].mascara
+      );
+    }
   }, [textIP]);
   useEffect(() => {
     setTextIP(

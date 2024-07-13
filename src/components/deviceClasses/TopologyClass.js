@@ -32,14 +32,25 @@ class Topology {
     };
     return topo;
   }
-
+  obtenerRedDesdeIpYMascara(ip, mascara) {
+    let ipBin = this.ipToBinary(ip);
+    let mascaraBin = this.ipToBinary(mascara);
+    let redBin = ipBin & mascaraBin;
+    return this.binaryToIp(redBin);
+  }
   runDijkstra() {
+    console.log("RUNNING DIJKSTRA")
     for (let dispositivo of Object.values(this.dispositivos)) {
       if (dispositivo instanceof Router) {
-        console.log("==============================", dispositivo.nombre);
-        dispositivo.distancias[dispositivo.nombre] = 0;
-        dispositivo.dijkstra(dispositivo.distancias, new Set(), 0, null);
-        console.log(dispositivo.distancias);
+        for (let interfaz in Object.values(dispositivo.interfaces)) {
+          if (interfaz.ip && interfaz.mascara) {
+            const red = this.obtenerRedDesdeIpYMascara(interfaz.ip, interfaz.mascara)
+            dispositivo.distanciasRedes[red] = 0
+          }
+        }
+        dispositivo.distanciasDipositivos[dispositivo.nombre] = 0
+        dispositivo.dijkstra(dispositivo.distanciasRedes, new Set(), 0, null, dispositivo.routingTable)
+        console.log(dispositivo.routingTable)
       }
     }
   }
@@ -57,7 +68,7 @@ class Topology {
           Object.values(this.dispositivos).filter((d) => d instanceof Router)
             .length - 1;
         dispositivo.bellmanFord(dispositivo.distancias, predecesores, longitud);
-        console.log(dispositivo.distancias);
+        console.log(dispositivo.routingTable);
       }
     }
   }
