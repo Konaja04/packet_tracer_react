@@ -9,6 +9,7 @@ class Topology {
     if (dispositivo.nombre in this.dispositivos) {
       console.log(`El dispositivo ${dispositivo.nombre} ya existe.`);
     } else {
+      console.log("Anadiendo", dispositivo.nombre)
       this.dispositivos[dispositivo.nombre] = dispositivo;
     }
   }
@@ -40,7 +41,9 @@ class Topology {
   }
   runDijkstra() {
     console.log("RUNNING DIJKSTRA")
+    console.log(Object.values(this.dispositivos))
     for (let dispositivo of Object.values(this.dispositivos)) {
+      console.log("XDDQDDW")
       if (dispositivo instanceof Router) {
         for (let interfaz in Object.values(dispositivo.interfaces)) {
           if (interfaz.ip && interfaz.mascara) {

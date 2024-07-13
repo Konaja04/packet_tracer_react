@@ -5,12 +5,17 @@ import Canvas from "./components/Canvas";
 import { Box, Button, Typography } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import CableIcon from "@mui/icons-material/Cable";
-import UploadFileIcon from "@mui/icons-material/UploadFile";  // Importar el ícono para el botón de carga
+import UploadFileIcon from "@mui/icons-material/UploadFile"; // Importar el ícono para el botón de carga
+import AddchartIcon from "@mui/icons-material/Addchart";
+import ComparativeTablePopover from "./components/Resultados";
 
 function App() {
   const [cableMode, setCableMode] = useState(false);
   const canvasRef = useRef(null); // Agregar estado para el archivo JSON
-  // const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [data, setData] = useState({});
+  const [updatedData, setUpdatedData] = useState(false);
+
   const toggleCableMode = () => {
     setCableMode(!cableMode);
   };
@@ -19,6 +24,14 @@ function App() {
     if (canvasRef.current) {
       canvasRef.current.guardarTopo(true);
     }
+  };
+
+  const handlePopoverOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
   };
 
   const cargarTopo = (archivo = null) => {
@@ -34,13 +47,14 @@ function App() {
   const borrarTodo = () => {
     if (canvasRef.current) {
       canvasRef.current.borrarTodo();
-      // navigate(0);
     }
   };
-  const runDikjstra = () => {
+
+  const runDijkstra = () => {
     if (canvasRef.current) {
-      canvasRef.current.runDijkstra();
-      // navigate(0);
+      const statistics = canvasRef.current.runDijkstra();
+      setData(statistics);
+      setUpdatedData(true);
     }
   };
 
@@ -51,7 +65,6 @@ function App() {
       reader.onload = (e) => {
         try {
           const result = JSON.parse(e.target.result);
-          console.log(result)
           cargarTopo(result);
         } catch (error) {
           console.error('Error parsing JSON:', error);
@@ -66,6 +79,13 @@ function App() {
       cargarTopo();
     }
   }, []);
+
+  useEffect(() => {
+    if (updatedData) {
+      console.log(data, "GAAAA");
+      setUpdatedData(false);
+    }
+  }, [data, updatedData]);
 
   return (
     <Box>
@@ -112,7 +132,7 @@ function App() {
               textTransform: "none",
               marginRight: "20px",
             }}
-            onClick={() => { runDikjstra() }}
+            onClick={runDijkstra}
           >
             <PlayArrowIcon />
           </Button>
@@ -129,7 +149,29 @@ function App() {
               textTransform: "none",
               marginRight: "20px",
             }}
-            onClick={() => { guardarTopo() }}
+            onClick={handlePopoverOpen}
+          >
+            <AddchartIcon />
+          </Button>
+          <ComparativeTablePopover
+            anchorEl={anchorEl}
+            handleClose={handlePopoverClose}
+            data={data}
+          />
+          <Button
+            sx={{
+              backgroundColor: "#85B688",
+              width: "40px",
+              borderRadius: "25px",
+              cursor: "pointer",
+              color: "black",
+              "&:hover": {
+                backgroundColor: "#85B688",
+              },
+              textTransform: "none",
+              marginRight: "20px",
+            }}
+            onClick={guardarTopo}
           >
             GUARDAR
           </Button>
@@ -169,7 +211,7 @@ function App() {
               textTransform: "none",
               marginRight: "20px",
             }}
-            onClick={() => { borrarTodo() }}
+            onClick={borrarTodo}
           >
             BORRAR
           </Button>

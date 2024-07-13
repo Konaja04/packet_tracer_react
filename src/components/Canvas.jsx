@@ -8,6 +8,10 @@ import SwitchComponent from "./SwitchComponent";
 import Topology from "./deviceClasses/TopologyClass";
 import TopologyManager from "./deviceClasses/TopologyManager";
 import { height, width } from "@mui/system";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import ZoomOutIcon from "@mui/icons-material/ZoomOut";
+import { Box, Button } from "@mui/material";
+import RouterClass from "./deviceClasses/RouterClass";
 const Canvas = forwardRef(({ cableMode }, ref) => {
   let topology = new Topology();
   let topologyManager = new TopologyManager();
@@ -15,9 +19,11 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
   const [lastPcCount, setLastPCCount] = useState(0);
   const [lastRouterCount, setLastRouterCount] = useState(0);
   const [lastSwitchCount, setLastSwitchCount] = useState(0);
-
+  const [scale, setScale] = useState(1);
+  const [canvasHeight, setCanvasHeight] = useState(700);
   const [devices, setDevices] = useState([]);
 
+  const [statistics, setStatistics] = useState({})
   //Cable handlers
   const [cables, setCables] = useState([]);
   const [selectedPortFrom, setSelectedPortFrom] = useState(null);
@@ -144,14 +150,14 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
     const fromCable = {
       id: selectedPortFrom.fromID,
       interface: selectedPortFrom.fromInterface,
-      x: selectedPortFrom.fromX,
-      y: selectedPortFrom.fromY,
+      x: selectedPortFrom.fromX + 25,
+      y: selectedPortFrom.fromY + 25,
     };
     const toCable = {
       id: to.toID,
       interface: to.toInterface,
-      x: to.toX,
-      y: to.toY,
+      x: to.toX + 25,
+      y: to.toY + 25,
     };
     addCable(fromCable, toCable);
     setSelectedPortFrom(null);
@@ -170,6 +176,29 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
     },
     [listDrop, canvasDrop]
   );
+  const ipToBinary = (ip) => {
+    console.log(ip)
+    let octetos = ip.split(".").map((number) => {
+      return parseInt(number, 10);
+    });
+
+    return (octetos[0] << 24) | (octetos[1] << 16) | (octetos[2] << 8) | octetos[3];
+  }
+
+
+  const binaryToIp = (binary) => {
+    let octeto1 = (binary >>> 24) & 0xff;
+    let octeto2 = (binary >>> 16) & 0xff;
+    let octeto3 = (binary >>> 8) & 0xff;
+    let octeto4 = binary & 0xff;
+    return `${octeto1}.${octeto2}.${octeto3}.${octeto4}`;
+  }
+  const obtenerRedDesdeIpYMascara = (ip, mascara) => {
+    let ipBin = ipToBinary(ip);
+    let mascaraBin = ipToBinary(mascara);
+    let redBin = ipBin & mascaraBin;
+    return binaryToIp(redBin);
+  }
   // SAVE TOPO XD
   useImperativeHandle(ref, () => ({
     guardarTopo(download = false) {
@@ -288,20 +317,96 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
       sessionStorage.clear()
     },
     runDijkstra() {
-      console.log("XDDDDDD")
-      topology.runDijkstra()
+      let iteraciones = 0
+      let dijkstraTimes = {}
+      let dijkstraIteraciones = {}
+
+      for (let dispositivo of devices) {
+        let classDevice = dispositivo.deviceClass
+        const dijsktraStartTime = performance.now()
+        if (classDevice instanceof RouterClass) {
+          for (let interfaz of Object.values(classDevice.interfaces)) {
+            if (interfaz.ip !== null && interfaz.mascara !== null) {
+              const red = obtenerRedDesdeIpYMascara(interfaz.ip, interfaz.mascara)
+              classDevice.distanciasRedes[red] = 0
+            }
+          }
+          classDevice.distanciasDipositivos[classDevice.nombre] = 0
+          classDevice.dijkstra(classDevice.distanciasRedes, new Set(), 0, null, classDevice.routingTable)
+
+          const dijsktraFinishTime = performance.now()
+          dijkstraTimes[classDevice.nombre] = dijsktraFinishTime - dijsktraStartTime
+          console.log(dijkstraTimes)
+        } else {
+          console.log("XD")
+        }
+      }
+      let bellmanTimes = {}
+      for (let dispositivo of devices) {
+        let classDevice = dispositivo.deviceClass
+        const bellmanStartTime = performance.now()
+        if (classDevice instanceof RouterClass) {
+          classDevice.distanciasDipositivos[classDevice.nombre] = 0;
+
+          const predecesores = {};
+          for (let disp of devices) {
+            let miniclassDevice = disp.deviceClass
+            predecesores[miniclassDevice.nombre] = null;
+          }
+
+          const longitud = devices.filter(disp => disp.classDevice instanceof RouterClass).length - 1;
+
+          classDevice.bellmanFord(classDevice.distanciasDipositivos, predecesores, longitud);
+
+          const bellmanFinishTime = performance.now
+          bellmanTimes[classDevice.nombre] = bellmanStartTime - bellmanFinishTime
+          console.log(bellmanTimes)
+        }
+
+      }
+      return {
+        dijkstra: {
+          iteraciones: dijkstraIteraciones,
+          times: dijkstraTimes
+        },
+        bellman: {
+          iteraciones: dijkstraIteraciones,
+          times: bellmanTimes
+        }
+      }
     }
-  }));
+  }
+  ));
+
+  const zoomIn = () => {
+    setScale((prevScale) => prevScale * 1.1);
+    setCanvasHeight((prevHeight) => prevHeight * 1.1);
+  };
+
+  const zoomOut = () => {
+    setScale((prevScale) => prevScale / 1.1);
+    setCanvasHeight((prevHeight) => prevHeight / 1.1);
+  };
+  // S
   return (
-    <div ref={combinedRef} className="canvas" >
-      {
-        devices.map((device) => {
+    <div>
+      <div
+        ref={combinedRef}
+        className="canvas"
+        style={{
+          transform: `scale(${scale})`,
+          transformOrigin: "0 0",
+          width: `${100 / scale}%`,
+          height: `800px`,
+        }}
+      >
+        {" "}
+        {devices.map((device) => {
           const renderDeviceComponent = (device) => {
             switch (device.type) {
               case "router":
                 return (
                   <RouterComponent
-                    key={device.id}
                     id={device.id}
                     type={device.type}
                     x={device.x}
@@ -324,7 +429,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
               case "pc":
                 return (
                   <PCComponent
-                    key={device.id}
                     id={device.id}
                     type={device.type}
                     x={device.x}
@@ -347,7 +451,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
               case "switch":
                 return (
                   <SwitchComponent
-                    key={device.id}
                     id={device.id}
                     type={device.type}
                     x={device.x}
@@ -372,25 +475,39 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
             }
           };
           return renderDeviceComponent(device);
-        })
-      }
-
-      < svg
-        style={{
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
+        })}
+        <svg
+          style={{
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+          }}
+        >
+          {cables.map((cable, index) => (
+            <Cable key={index} from={cable.from} to={cable.to} />
+          ))}
+        </svg>
+      </div>
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: 16,
+          left: 16,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
         }}
       >
-        {
-          cables.map((cable, index) => (
-            <Cable key={index} from={cable.from} to={cable.to} />
-          ))
-        }
-      </svg >
-    </div >
+        <Button onClick={zoomIn} variant="contained" sx={{ mb: 1 }}>
+          <ZoomInIcon />
+        </Button>
+        <Button onClick={zoomOut} variant="contained">
+          <ZoomOutIcon />
+        </Button>
+      </Box>
+    </div>
   );
 });
 

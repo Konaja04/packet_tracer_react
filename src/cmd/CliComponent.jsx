@@ -85,9 +85,11 @@ const CLIComponent = ({ device }) => {
                         <TextField
                             className="terminal-input"
                             value={input}
+                            variant="standard"
                             onChange={handleInputChange}
                             onKeyPress={handleKeyPress}
                             InputProps={{
+                                disableUnderline: true,
                                 style: {
                                     color: "white",
                                 },

@@ -27,7 +27,7 @@ const TerminalComponent = ({ device }) => {
     });
 
     if (input.startsWith("ip address ")) {
-      const splited = input.split(' ');
+      const splited = input.split(" ");
       if (splited.length === 4) {
         const ip = splited[2];
         const mascara = splited[3];
@@ -39,7 +39,6 @@ const TerminalComponent = ({ device }) => {
       insertErrorCommand(newMessages, input);
     }
   };
-
 
   const handleConfigOptions = (newMessages, input) => {
     newMessages.push({
@@ -61,18 +60,17 @@ const TerminalComponent = ({ device }) => {
       }
     } else if (input.startsWith("interface")) {
       const [_, interfaceName] = input.split(" ");
-      let newInterfaceName = ""
+      let newInterfaceName = "";
       if (interfaceName.startsWith("giga")) {
-        newInterfaceName = `GigabitEthernet${interfaceName.slice(15)}`
+        newInterfaceName = `GigabitEthernet${interfaceName.slice(15)}`;
       } else {
-        newInterfaceName = `FastEthernet${interfaceName.slice(12)}`
+        newInterfaceName = `FastEthernet${interfaceName.slice(12)}`;
       }
       if (device.interfaces[newInterfaceName] !== null) {
         setInterfaceState(true);
         setSelectedInterface(newInterfaceName);
       } else {
         insertErrorCommand(newMessages, input);
-
       }
     } else {
       insertErrorCommand(newMessages, input);
@@ -99,13 +97,6 @@ const TerminalComponent = ({ device }) => {
 
     if (input === "en") {
       setEnableState(true);
-    } else if (input === "dd") {
-      const routingTable = device.calcularRutasOptimasDijkstra() ;
-      const formattedTable = JSON.stringify(routingTable, null, 2);
-      newMessages.push({
-        user: `${device.nombre}>`,
-        text: `Tabla de enrutamiento calculada con Dijkstra:\n${formattedTable}`,
-      });
     } else {
       insertErrorCommand(newMessages, input);
     }
@@ -166,15 +157,19 @@ const TerminalComponent = ({ device }) => {
           <Box className="terminal-input-container">
             {enableState
               ? configState
-                ? interfaceState ? `${device.nombre}(config-if)#` : `${device.nombre}(config)#`
+                ? interfaceState
+                  ? `${device.nombre}(config-if)#`
+                  : `${device.nombre}(config)#`
                 : `${device.nombre}#`
               : `${device.nombre}>`}
             <TextField
               className="terminal-input"
               value={input}
+              variant="standard"
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               InputProps={{
+                disableUnderline: true,
                 style: {
                   color: "white",
                 },

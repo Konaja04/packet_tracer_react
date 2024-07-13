@@ -144,7 +144,7 @@ class RouterClass extends DeviceClass {
     return this.binaryToIp(redBin);
   }
   devolverInterfazEntrada(vecino, origen) {
-    for (let interfaz in Object.values(vecino.interfaces)) {
+    for (let interfaz of Object.values(vecino.interfaces)) {
       if (vecino.vecinos[interfaz.nombre] === origen) {
         return interfaz
       }
@@ -159,13 +159,14 @@ class RouterClass extends DeviceClass {
         const vecino = this.vecinos[interfaz.nombre];
         if (distAcum === 0) {
           salida = this.devolverInterfazEntrada(vecino, this);
+          console.log("SALIIIII")
         }
 
         if (!distancias.hasOwnProperty(red)) {
           distancias[red] = distAcum;
           tabla[red] = {
             mascara: interfaz.mascara,
-            nextHop: salida
+            nextHop: salida.ip
           };
         }
 
@@ -173,7 +174,7 @@ class RouterClass extends DeviceClass {
           distancias[red] = distAcum;
           tabla[red] = {
             mascara: interfaz.mascara,
-            nextHop: salida
+            nextHop: salida.ip
           };
         }
 
@@ -191,28 +192,44 @@ class RouterClass extends DeviceClass {
   }
 
 
+
   bellmanFord(distancias, predecesores, relaxations) {
-    if (relaxations === 0) {
-      return;
-    }
-    for (let vecino of Object.values(this.vecinos)) {
-      if (vecino instanceof RouterClass) {
-        if (!distancias.hasOwnProperty(vecino.nombre)) {
-          distancias[vecino.nombre] = Infinity;
-        }
-        if (
-          distancias[this.nombre] + this.distancias[vecino.nombre] <
-          distancias[vecino.nombre]
-        ) {
-          distancias[vecino.nombre] =
-            distancias[this.nombre] + this.distancias[vecino.nombre];
-          predecesores[vecino.nombre] = this.nombre;
+    distancias[this.nombre] = 0; // Inicia la distancia al nodo origen como 0
+
+    for (let i = 0; i < relaxations; i++) {
+      for (let dispositivo of Object.values(this.vecinos)) {
+        if (dispositivo instanceof RouterClass) {
+          if (!distancias.hasOwnProperty(dispositivo.nombre)) {
+            distancias[dispositivo.nombre] = Infinity;
+          }
+          for (let vecino of Object.values(dispositivo.vecinos)) {
+            if (vecino instanceof RouterClass) {
+              if (
+                distancias[dispositivo.nombre] + dispositivo.distanciasDipositivos[vecino.nombre] <
+                distancias[vecino.nombre]
+              ) {
+                distancias[vecino.nombre] =
+                  distancias[dispositivo.nombre] + dispositivo.distanciasDipositivos[vecino.nombre];
+                predecesores[vecino.nombre] = dispositivo.nombre;
+              }
+            }
+          }
         }
       }
     }
-    for (let vecino of Object.values(this.vecinos)) {
-      if (vecino instanceof RouterClass) {
-        vecino.bellmanFord(distancias, predecesores, relaxations - 1);
+
+    // Comprobación de ciclos negativos (opcional)
+    for (let dispositivo of Object.values(this.vecinos)) {
+      if (dispositivo instanceof RouterClass) {
+        for (let vecino of Object.values(dispositivo.vecinos)) {
+          if (
+            distancias[dispositivo.nombre] + dispositivo.distanciasDipositivos[vecino.nombre] <
+            distancias[vecino.nombre]
+          ) {
+            console.error("El grafo contiene un ciclo de peso negativo");
+            return;
+          }
+        }
       }
     }
   }
