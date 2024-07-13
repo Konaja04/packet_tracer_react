@@ -23,6 +23,15 @@ class RouterClass extends DeviceClass {
   liberarInterface(nombre) {
     if (nombre in this.interfaces) {
       this.interfaces[nombre].liberar();
+      this.interfaces[nombre].configurar(ip, mascara, null);
+    } else {
+      throw new Error(`Interface ${nombre} no existe`);
+    }
+  }
+
+  liberarInterface(nombre) {
+    if (nombre in this.interfaces) {
+      this.interfaces[nombre].liberar();
     } else {
       throw new Error(`Interface ${nombre} no existe`);
     }
@@ -115,12 +124,38 @@ class RouterClass extends DeviceClass {
     let ipBin = this.ipToBinary(ip);
     let redBin = this.ipToBinary(red);
     let mascaraBin = this.ipToBinary(mascara);
+    let ipBin = this.ipToBinary(ip);
+    let redBin = this.ipToBinary(red);
+    let mascaraBin = this.ipToBinary(mascara);
     return (ipBin & mascaraBin) === (redBin & mascaraBin);
   }
 
 
 
+
+
   ipToBinary(ip) {
+    let octetos = ip.split(".").map((number) => {
+      return parseInt(number, 10);
+    });
+
+    return (octetos[0] << 24) | (octetos[1] << 16) | (octetos[2] << 8) | octetos[3];
+  }
+
+
+  binaryToIp(binary) {
+    let octeto1 = (binary >>> 24) & 0xff;
+    let octeto2 = (binary >>> 16) & 0xff;
+    let octeto3 = (binary >>> 8) & 0xff;
+    let octeto4 = binary & 0xff;
+    return `${octeto1}.${octeto2}.${octeto3}.${octeto4}`;
+  }
+
+  obtenerRedDesdeIpYMascara(ip, mascara) {
+    let ipBin = this.ipToBinary(ip);
+    let mascaraBin = this.ipToBinary(mascara);
+    let redBin = ipBin & mascaraBin;
+    return this.binaryToIp(redBin);
     let octetos = ip.split(".").map((number) => {
       return parseInt(number, 10);
     });
