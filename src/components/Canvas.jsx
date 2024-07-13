@@ -139,12 +139,13 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
   const handleConection = (to) => {
     const fromDevice = devices.find((d) => d.id === selectedPortFrom.fromID);
     const toDevice = devices.find((d) => d.id === to.toID);
-
+    const peso = Math.floor(Math.random() * 4) + 1;
     topologyManager.connectDevices(
       selectedPortFrom.fromInterface,
       fromDevice.deviceClass,
       to.toInterface,
-      toDevice.deviceClass
+      toDevice.deviceClass,
+      peso
     );
 
     const fromCable = {
@@ -159,13 +160,13 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
       x: to.toX + 25,
       y: to.toY + 25,
     };
-    addCable(fromCable, toCable);
+    addCable(fromCable, toCable, peso);
     setSelectedPortFrom(null);
     ref.current.guardarTopo();
   };
 
-  const addCable = (from, to) => {
-    setCables((prevCables) => [...prevCables, { from, to }]);
+  const addCable = (from, to, peso) => {
+    setCables((prevCables) => [...prevCables, { from, to, peso }]);
   };
 
   const combinedRef = useCallback(
@@ -293,23 +294,44 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
           });
         });
 
+
         setDevices(newDevices);  // Actualiza el estado de los dispositivos
         setLastID(max + 1)
         setLastPCCount(devices2.filter(x => x.type === "pc").length)
         setLastRouterCount(devices2.filter(x => x.type === "router").length)
         setLastSwitchCount(devices2.filter(x => x.type === "switch").length)
-        setCables(cableados);  // Actualiza el estado de los cables
+        // setCables(cableados);
+        // const
+        const newCables = [];
 
         cableados.forEach((conexion) => {
+          const peso = Math.floor(Math.random() * 4) + 1;
           const fromDevice = newDevices.find((d) => d.id === conexion.from.id);
           const toDevice = newDevices.find((d) => d.id === conexion.to.id);
           topologyManager.connectDevices(
             conexion.from.interface,
             fromDevice.deviceClass,
             conexion.to.interface,
-            toDevice.deviceClass
+            toDevice.deviceClass,
+            peso
           );
+          const fromCable = {
+            id: conexion.from.id,
+            interface: conexion.from.interface,
+            x: conexion.from.x + 25,
+            y: conexion.from.y + 25,
+          };
+          const toCable = {
+            id: conexion.to.id,
+            interface: conexion.to.interface,
+            x: conexion.to.x + 25,
+            y: conexion.to.y + 25,
+          };
+
+          newCables.push({ from: fromCable, to: toCable, peso });
         });
+
+        setCables(newCables);
       }
 
     },
@@ -332,6 +354,7 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
             }
           }
           classDevice.distanciasDipositivos[classDevice.nombre] = 0
+          classDevice.routingTable = {}
           classDevice.dijkstra(classDevice.distanciasRedes, new Set(), 0, null, classDevice.routingTable)
 
           const dijsktraFinishTime = performance.now()
@@ -486,7 +509,7 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
           }}
         >
           {cables.map((cable, index) => (
-            <Cable key={index} from={cable.from} to={cable.to} />
+            <Cable key={index} from={cable.from} to={cable.to} peso={cable.peso} />
           ))}
         </svg>
       </div>
