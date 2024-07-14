@@ -9,16 +9,16 @@ El algoritmo de Dijkstra implementado funciona de manera recursiva directamente 
 - Configuración de dispositivos: permite configurar direcciones ip, máscaras y gateways asi como tablas de enrutamiento.
 - Simulación de red: ejecuta simulaciones para observar el tiempo de ejecución por router para encontrar las diversas redes en la topologia.
 - Asimismo, tienes acceso a un terminal tanto en PC (para hacer ping) como en Router (para configurar rutas estáticas e interfaces)
-### Comandos disponibles:
-#### En router:
-##### en
-##### configure terminal
-##### ip route
-##### interface gigabitethernet0/0 (ej.) 
-##### ip address 
-#### En PC:
-##### ping
 - interfaz amigable: interfaz de usuario intuitiva y fácil de usar, desarrollada con react y material-ui.
+## Comandos disponibles:
+En router:
+  - en
+  - configure terminal
+  - ip route
+  - interface gigabitethernet0/0 (ej.) 
+  - ip address 
+En PC:
+  - ping
 
 
 ## scripts disponibles
