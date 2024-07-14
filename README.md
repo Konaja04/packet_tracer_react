@@ -16,7 +16,8 @@ En router:
   - configure terminal
   - ip route
   - interface gigabitethernet0/0 (ej.) 
-  - ip address 
+  - ip address
+##
 En PC:
   - ping
 
