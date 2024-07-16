@@ -23,7 +23,7 @@ En PC:
 
 
 ## scripts disponibles
-
+ https://konaja04.github.io/packet_tracer_react/
 en el directorio del proyecto, puedes ejecutar:
 
 ### `npm start`
