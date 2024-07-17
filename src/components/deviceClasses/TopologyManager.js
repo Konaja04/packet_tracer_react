@@ -14,7 +14,6 @@ class TopologyManager {
     } else {
       throw new Error("Dispositivo desconocido");
     }
-    console.log("anadiendo")
     topology.addDevice(device);
     return device;
   }

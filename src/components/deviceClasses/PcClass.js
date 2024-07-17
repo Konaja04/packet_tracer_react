@@ -17,7 +17,6 @@ class PcClass extends DeviceClass {
   }
 
   setIp(ip) {
-    console.log("1asdoa")
     this.interfaces["FastEthernet0/1"].ip = ip;
   }
 
@@ -52,7 +51,7 @@ class PcClass extends DeviceClass {
         }
       } catch (error) {
         console.log(`ERROR 1 en ${this.nombre}`);
-        return [`Error: ${error.message}`, false];
+        return [`Request timeout for ${destinationIp}`, false];
       }
     }
   }

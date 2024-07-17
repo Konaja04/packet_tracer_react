@@ -41,7 +41,7 @@ const RouterComponent = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [anchorEl2, setAnchorEl2] = useState(null);
   const [selectedForm, setSelectedForm] = useState("interface");
-  const [selectedFormRouting, setSelectedFormRouting] = useState("RIP");
+  const [selectedFormRouting, setSelectedFormRouting] = useState("static");
   const [selectedButton, setSelectedButton] = useState(null);
   const [showCLI, setShowCLI] = useState(false);
   const handleClick = (event) => {
@@ -295,12 +295,6 @@ const RouterComponent = ({
                   label="Static"
                   onClick={() => handleFormChangeRouting("static")}
                 />
-                <FormControlLabel
-                  value="RIP"
-                  control={<Radio />}
-                  label="RIP"
-                  onClick={() => handleFormChangeRouting("RIP")}
-                />
               </RadioGroup>
 
               <Box
@@ -338,34 +332,6 @@ const RouterComponent = ({
                         </Typography>
                       </Box>
                     ])}
-                  </Box>
-                )}
-                {selectedFormRouting === "RIP" && (
-                  <Box>
-                    <Box
-                      sx={{
-                        borderBottom: "1px solid #ccc",
-                        height: "30px",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography sx={{ marginLeft: "10px" }}>
-                        10.10.0
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        borderBottom: "1px solid #ccc",
-                        height: "30px",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography sx={{ marginLeft: "10px" }}>
-                        192.168.0
-                      </Typography>
-                    </Box>
                   </Box>
                 )}
               </Box>

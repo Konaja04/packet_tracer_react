@@ -162,7 +162,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
     };
     addCable(fromCable, toCable, peso);
     setSelectedPortFrom(null);
-    ref.current.guardarTopo();
   };
 
   const addCable = (from, to, peso) => {
@@ -178,7 +177,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
     [listDrop, canvasDrop]
   );
   const ipToBinary = (ip) => {
-    console.log(ip)
     let octetos = ip.split(".").map((number) => {
       return parseInt(number, 10);
     });
@@ -203,7 +201,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
   // SAVE TOPO XD
   useImperativeHandle(ref, () => ({
     guardarTopo(download = false) {
-      sessionStorage.clear()
       const dispositivos = devices.map((device) => {
         return {
           id: device.id,
@@ -221,25 +218,29 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
         dispositivos,
         cables,
       };
-      console.log(topoData)
-      const jsonTopoData = JSON.stringify(topoData);
-      sessionStorage.setItem("TOPO", jsonTopoData)
-      if (download === true) {
-        const blob = new Blob([jsonTopoData], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "topologia.json";
-        a.click();
-        URL.revokeObjectURL(url);
+      if (dispositivos.length > 0) {
+        console.log(topoData)
+        const jsonTopoData = JSON.stringify(topoData);
+        sessionStorage.setItem("TOPO", jsonTopoData)
+        if (download === true) {
+          const blob = new Blob([jsonTopoData], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "topologia.json";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
       }
+
     },
     cargarTopo(archivo = null) {
       let topoData
       if (archivo !== null) {
         const data = archivo
-        topoData = data
-        sessionStorage.setItem("TOPO", topoData)
+        console.log(data)
+        topoData = JSON.parse(data)
+        sessionStorage.setItem("TOPO", data)
       } else {
         const data = sessionStorage.getItem("TOPO");
         topoData = JSON.parse(data);
@@ -295,13 +296,11 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
         });
 
 
-        setDevices(newDevices);  // Actualiza el estado de los dispositivos
+        setDevices(newDevices);
         setLastID(max + 1)
         setLastPCCount(devices2.filter(x => x.type === "pc").length)
         setLastRouterCount(devices2.filter(x => x.type === "router").length)
         setLastSwitchCount(devices2.filter(x => x.type === "switch").length)
-        // setCables(cableados);
-        // const
         const newCables = [];
 
         cableados.forEach((conexion) => {
@@ -333,7 +332,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
 
         setCables(newCables);
       }
-
     },
     borrarTodo() {
       sessionStorage.clear()
@@ -346,56 +344,30 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
       for (let dispositivo of devices) {
         let classDevice = dispositivo.deviceClass
         const dijsktraStartTime = performance.now()
+        classDevice.distanciasRedes = {}
         if (classDevice instanceof RouterClass) {
           for (let interfaz of Object.values(classDevice.interfaces)) {
             if (interfaz.ip !== null && interfaz.mascara !== null) {
               const red = obtenerRedDesdeIpYMascara(interfaz.ip, interfaz.mascara)
+              console.log("========", red)
               classDevice.distanciasRedes[red] = 0
             }
           }
           classDevice.distanciasDipositivos[classDevice.nombre] = 0
           classDevice.routingTable = {}
-          classDevice.dijkstra(classDevice.distanciasRedes, new Set(), 0, null, classDevice.routingTable)
+          iteraciones = classDevice.dijkstra(classDevice.distanciasRedes, new Set(), 0, null, classDevice.routingTable)
 
           const dijsktraFinishTime = performance.now()
           dijkstraTimes[classDevice.nombre] = dijsktraFinishTime - dijsktraStartTime
-          console.log(dijkstraTimes)
+          dijkstraIteraciones[classDevice.nombre] = iteraciones
         } else {
           console.log("XD")
         }
       }
-      let bellmanTimes = {}
-      for (let dispositivo of devices) {
-        let classDevice = dispositivo.deviceClass
-        const bellmanStartTime = performance.now()
-        if (classDevice instanceof RouterClass) {
-          classDevice.distanciasDipositivos[classDevice.nombre] = 0;
 
-          const predecesores = {};
-          for (let disp of devices) {
-            let miniclassDevice = disp.deviceClass
-            predecesores[miniclassDevice.nombre] = null;
-          }
-
-          const longitud = devices.filter(disp => disp.classDevice instanceof RouterClass).length - 1;
-
-          classDevice.bellmanFord(classDevice.distanciasDipositivos, predecesores, longitud);
-
-          const bellmanFinishTime = performance.now
-          bellmanTimes[classDevice.nombre] = bellmanStartTime - bellmanFinishTime
-          console.log(bellmanTimes)
-        }
-
-      }
       return {
-        dijkstra: {
-          iteraciones: dijkstraIteraciones,
-          times: dijkstraTimes
-        },
-        bellman: {
-          iteraciones: dijkstraIteraciones,
-          times: bellmanTimes
-        }
+        iteraciones: dijkstraIteraciones,
+        times: dijkstraTimes
       }
     }
   }
@@ -410,7 +382,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
     setScale((prevScale) => prevScale / 1.1);
     setCanvasHeight((prevHeight) => prevHeight / 1.1);
   };
-  // S
   return (
     <div>
       <div

@@ -14,15 +14,14 @@ function App() {
   const canvasRef = useRef(null); // Agregar estado para el archivo JSON
   const [anchorEl, setAnchorEl] = useState(null);
   const [data, setData] = useState({});
-  const [updatedData, setUpdatedData] = useState(false);
 
   const toggleCableMode = () => {
     setCableMode(!cableMode);
   };
 
-  const guardarTopo = () => {
+  const guardarTopo = (state = false) => {
     if (canvasRef.current) {
-      canvasRef.current.guardarTopo(true);
+      canvasRef.current.guardarTopo(state);
     }
   };
 
@@ -37,10 +36,12 @@ function App() {
   const cargarTopo = (archivo = null) => {
     if (canvasRef.current) {
       if (archivo !== null) {
+        console.log("archivo")
         canvasRef.current.cargarTopo(archivo);
       } else {
         canvasRef.current.cargarTopo();
       }
+      guardarTopo(false);
     }
   };
 
@@ -54,7 +55,6 @@ function App() {
     if (canvasRef.current) {
       const statistics = canvasRef.current.runDijkstra();
       setData(statistics);
-      setUpdatedData(true);
     }
   };
 
@@ -64,7 +64,8 @@ function App() {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const result = JSON.parse(e.target.result);
+          const result = e.target.result;
+          console.log("ASDOANDNANASNDOASNDO RESULTADO")
           cargarTopo(result);
         } catch (error) {
           console.error('Error parsing JSON:', error);
@@ -76,16 +77,10 @@ function App() {
 
   useEffect(() => {
     if (sessionStorage.getItem("TOPO") !== null) {
+      console.log("CARGANDO DE SESSION")
       cargarTopo();
     }
   }, []);
-
-  useEffect(() => {
-    if (updatedData) {
-      console.log(data, "GAAAA");
-      setUpdatedData(false);
-    }
-  }, [data, updatedData]);
 
   return (
     <Box>
@@ -132,7 +127,7 @@ function App() {
               textTransform: "none",
               marginRight: "20px",
             }}
-            onClick={runDijkstra}
+            onClick={() => { runDijkstra() }}
           >
             <PlayArrowIcon />
           </Button>
@@ -171,7 +166,7 @@ function App() {
               textTransform: "none",
               marginRight: "20px",
             }}
-            onClick={guardarTopo}
+            onClick={() => { guardarTopo(true) }}
           >
             GUARDAR
           </Button>

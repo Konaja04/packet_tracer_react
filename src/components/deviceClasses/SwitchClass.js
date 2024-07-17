@@ -64,7 +64,6 @@ class SwitchClass extends DeviceClass {
         }
       }
     }
-    console.log("xddd")
     return response;
   }
 

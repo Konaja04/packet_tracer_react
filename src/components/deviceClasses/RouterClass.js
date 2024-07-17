@@ -145,6 +145,7 @@ class RouterClass extends DeviceClass {
   }
   devolverInterfazEntrada(vecino, origen) {
     for (let interfaz of Object.values(vecino.interfaces)) {
+      console.log(interfaz)
       if (vecino.vecinos[interfaz.nombre] === origen) {
         return interfaz
       }
@@ -153,86 +154,55 @@ class RouterClass extends DeviceClass {
   }
   dijkstra(distancias, visitados, distAcum, salida, tabla) {
     visitados.add(this.nombre);
-    for (let interfaz of Object.values(this.interfaces)) {
-      if (interfaz.ip && interfaz.mascara) {
-        const red = this.obtenerRed(interfaz.ip, interfaz.mascara);
-        const vecino = this.vecinos[interfaz.nombre];
-        if (distAcum === 0) {
-          salida = this.devolverInterfazEntrada(vecino, this);
-          console.log("SALIIIII")
-        }
+    let iteraciones = 0;
+    try {
+      for (let interfaz of Object.values(this.interfaces)) {
+        if (interfaz.ip && interfaz.mascara) {
+          const red = this.obtenerRed(interfaz.ip, interfaz.mascara);
+          const vecino = this.vecinos[interfaz.nombre];
+          iteraciones++;
 
-        if (!distancias.hasOwnProperty(red)) {
-          distancias[red] = distAcum;
-          tabla[red] = {
-            mascara: interfaz.mascara,
-            nextHop: salida.ip
-          };
-        }
-
-        if (distancias[red] > distAcum) {
-          distancias[red] = distAcum;
-          tabla[red] = {
-            mascara: interfaz.mascara,
-            nextHop: salida.ip
-          };
-        }
-
-        if (vecino && !visitados.has(vecino.nombre) && vecino instanceof RouterClass) {
-          vecino.dijkstra(
-            distancias,
-            new Set(visitados),
-            distAcum + this.distanciasDipositivos[vecino.nombre],
-            salida,
-            tabla
-          );
-        }
-      }
-    }
-  }
-
-
-
-  bellmanFord(distancias, predecesores, relaxations) {
-    distancias[this.nombre] = 0; // Inicia la distancia al nodo origen como 0
-
-    for (let i = 0; i < relaxations; i++) {
-      for (let dispositivo of Object.values(this.vecinos)) {
-        if (dispositivo instanceof RouterClass) {
-          if (!distancias.hasOwnProperty(dispositivo.nombre)) {
-            distancias[dispositivo.nombre] = Infinity;
+          if (distAcum === 0) {
+            if (vecino !== null && vecino !== undefined) {
+              salida = this.devolverInterfazEntrada(vecino, this);
+            }
           }
-          for (let vecino of Object.values(dispositivo.vecinos)) {
-            if (vecino instanceof RouterClass) {
-              if (
-                distancias[dispositivo.nombre] + dispositivo.distanciasDipositivos[vecino.nombre] <
-                distancias[vecino.nombre]
-              ) {
-                distancias[vecino.nombre] =
-                  distancias[dispositivo.nombre] + dispositivo.distanciasDipositivos[vecino.nombre];
-                predecesores[vecino.nombre] = dispositivo.nombre;
-              }
+
+          if (!distancias.hasOwnProperty(red)) {
+            distancias[red] = distAcum;
+            tabla[red] = {
+              mascara: interfaz.mascara,
+              nextHop: salida.ip
+            };
+          }
+
+          if (distancias[red] > distAcum) {
+            distancias[red] = distAcum;
+            tabla[red] = {
+              mascara: interfaz.mascara,
+              nextHop: salida.ip
+            };
+          }
+          if (vecino !== undefined && vecino !== null) {
+            if (!visitados.has(vecino.nombre) && vecino instanceof RouterClass) {
+              iteraciones += vecino.dijkstra(
+                distancias,
+                new Set(visitados),
+                distAcum + this.distanciasDipositivos[vecino.nombre],
+                salida,
+                tabla
+              );
             }
           }
         }
       }
+    } catch (error) {
+      console.log(this.nombre, "ERORRRRRR ", error)
     }
 
-    // Comprobación de ciclos negativos (opcional)
-    for (let dispositivo of Object.values(this.vecinos)) {
-      if (dispositivo instanceof RouterClass) {
-        for (let vecino of Object.values(dispositivo.vecinos)) {
-          if (
-            distancias[dispositivo.nombre] + dispositivo.distanciasDipositivos[vecino.nombre] <
-            distancias[vecino.nombre]
-          ) {
-            console.error("El grafo contiene un ciclo de peso negativo");
-            return;
-          }
-        }
-      }
-    }
+    return iteraciones;
   }
+
 
   getInfo() {
     let info = super.getInfo();

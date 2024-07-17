@@ -157,7 +157,6 @@ const PCComponent = ({
 
   useEffect(() => {
     if (textIP !== "") {
-      console.log(textIP)
       device.setIp(textIP);
     }
   }, [textIP]);

@@ -62,36 +62,27 @@ function ComparativeTablePopover({ anchorEl, handleClose, data }) {
         >
             <Box sx={{ p: 2 }}>
                 <Typography variant="h6" align="center">
-                    RESULTADOS
+                    RESULTADOS DIJKSTRA
                 </Typography>
 
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Algoritmos</TableCell>
-                            <TableCell colSpan={2} align="center">
-                                Dijkstra
-                            </TableCell>
-                            <TableCell colSpan={2} align="center">
-                                Bellman Ford
-                            </TableCell>
-                        </TableRow>
-                        <TableRow>
                             <TableCell></TableCell>
                             <TableCell>Tiempo</TableCell>
                             {/* <TableCell>Iteraciones</TableCell> */}
-                            <TableCell>Tiempo</TableCell>
+                            <TableCell>Iteraciones</TableCell>
                             {/* <TableCell>Iteraciones</TableCell> */}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data && data.dijkstra && data.dijkstra.times &&
-                            Object.entries(data.dijkstra.times).map(([key, time]) => (
+                        {data && data.iteraciones && data.times &&
+                            Object.entries(data.iteraciones).map(([key, option]) => (
                                 <TableRow key={key}>
                                     <TableCell>{key}</TableCell>
-                                    <TableCell align="center">{time}</TableCell>
+                                    <TableCell align="center">{Math.round(data.times[key] * 100) / 100} ms</TableCell>
                                     {/* <TableCell align="center">{time}</TableCell> */}
-                                    <TableCell align="center">{time * 1.4}</TableCell>
+                                    <TableCell align="center">{option}</TableCell>
                                 </TableRow>
                             ))}
 
