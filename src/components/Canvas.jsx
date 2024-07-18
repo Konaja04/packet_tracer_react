@@ -5,22 +5,16 @@ import Cable from "./Cable";
 import PCComponent from "./PcComponent";
 import RouterComponent from "./RouterComponent";
 import SwitchComponent from "./SwitchComponent";
-import Topology from "./deviceClasses/TopologyClass";
 import TopologyManager from "./deviceClasses/TopologyManager";
-import { height, width } from "@mui/system";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Button } from "@mui/material";
 import RouterClass from "./deviceClasses/RouterClass";
 const Canvas = forwardRef(({ cableMode }, ref) => {
-  let topology = new Topology();
   let topologyManager = new TopologyManager();
   const [lastID, setLastID] = useState(1);
   const [lastPcCount, setLastPCCount] = useState(0);
   const [lastRouterCount, setLastRouterCount] = useState(0);
   const [lastSwitchCount, setLastSwitchCount] = useState(0);
   const [scale, setScale] = useState(1);
-  const [canvasHeight, setCanvasHeight] = useState(700);
   const [devices, setDevices] = useState([]);
 
   const [statistics, setStatistics] = useState({})
@@ -50,7 +44,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
       const x = offset.x - canvas.left;
       const y = offset.y - canvas.top;
       moveDeviceOnCanvas(item, { x, y });
-
       ref.current.guardarTopo();
     },
   });
@@ -58,13 +51,13 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
     let device;
     switch (deviceType) {
       case "router":
-        device = topologyManager.createDevice(topology, "router", `Router${count}`);
+        device = topologyManager.createDevice("router", `Router${count}`);
         break;
       case "pc":
-        device = topologyManager.createDevice(topology, "pc", `PC${count}`);
+        device = topologyManager.createDevice("pc", `PC${count}`);
         break;
       case "switch":
-        device = topologyManager.createDevice(topology, "switch", `Switch${count}`);
+        device = topologyManager.createDevice("switch", `Switch${count}`);
         break;
       default:
         throw new Error("Tipo de dispositivo desconocido");
@@ -162,6 +155,7 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
     };
     addCable(fromCable, toCable, peso);
     setSelectedPortFrom(null);
+    ref.current.guardarTopo();
   };
 
   const addCable = (from, to, peso) => {
@@ -221,6 +215,7 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
       if (dispositivos.length > 0) {
         console.log(topoData)
         const jsonTopoData = JSON.stringify(topoData);
+        sessionStorage.clear()
         sessionStorage.setItem("TOPO", jsonTopoData)
         if (download === true) {
           const blob = new Blob([jsonTopoData], { type: "application/json" });
@@ -232,13 +227,12 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
           URL.revokeObjectURL(url);
         }
       }
-
+      console.log("GUARDAAAAAR")
     },
     cargarTopo(archivo = null) {
       let topoData
       if (archivo !== null) {
         const data = archivo
-        console.log(data)
         topoData = JSON.parse(data)
         sessionStorage.setItem("TOPO", data)
       } else {
@@ -251,7 +245,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
         let contaPC = 0;
         let contaRouter = 0;
         let contaSwitch = 0;
-
         let max = 0
         const newDevices = [];
         devices2.forEach((device) => {
@@ -317,14 +310,14 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
           const fromCable = {
             id: conexion.from.id,
             interface: conexion.from.interface,
-            x: conexion.from.x + 25,
-            y: conexion.from.y + 25,
+            x: conexion.from.x,
+            y: conexion.from.y,
           };
           const toCable = {
             id: conexion.to.id,
             interface: conexion.to.interface,
-            x: conexion.to.x + 25,
-            y: conexion.to.y + 25,
+            x: conexion.to.x,
+            y: conexion.to.y,
           };
 
           newCables.push({ from: fromCable, to: toCable, peso });
@@ -360,8 +353,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
           const dijsktraFinishTime = performance.now()
           dijkstraTimes[classDevice.nombre] = dijsktraFinishTime - dijsktraStartTime
           dijkstraIteraciones[classDevice.nombre] = iteraciones
-        } else {
-          console.log("XD")
         }
       }
 
@@ -373,15 +364,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
   }
   ));
 
-  const zoomIn = () => {
-    setScale((prevScale) => prevScale * 1.1);
-    setCanvasHeight((prevHeight) => prevHeight * 1.1);
-  };
-
-  const zoomOut = () => {
-    setScale((prevScale) => prevScale / 1.1);
-    setCanvasHeight((prevHeight) => prevHeight / 1.1);
-  };
   return (
     <div>
       <div
@@ -484,23 +466,6 @@ const Canvas = forwardRef(({ cableMode }, ref) => {
           ))}
         </svg>
       </div>
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 16,
-          left: 16,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-        }}
-      >
-        <Button onClick={zoomIn} variant="contained" sx={{ mb: 1 }}>
-          <ZoomInIcon />
-        </Button>
-        <Button onClick={zoomOut} variant="contained">
-          <ZoomOutIcon />
-        </Button>
-      </Box>
     </div>
   );
 });

@@ -3,7 +3,7 @@ import Switch from "./SwitchClass";
 import Pc from "./PcClass";
 class TopologyManager {
   constructor() { }
-  createDevice(topology, deviceType, nombre) {
+  createDevice(deviceType, nombre) {
     let device;
     if (deviceType === "router") {
       device = new Router(nombre);
@@ -14,7 +14,6 @@ class TopologyManager {
     } else {
       throw new Error("Dispositivo desconocido");
     }
-    topology.addDevice(device);
     return device;
   }
 
