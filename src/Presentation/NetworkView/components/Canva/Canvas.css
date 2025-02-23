@@ -1,0 +1,21 @@
+/* src/components/Canvas.css */
+.canvas {
+  width: 100%;
+  height: 800px;
+  background-color: white;
+  position: relative;
+}
+
+#item-button {
+  background-color: black;
+  border-radius: 25px;
+  color: white;
+  padding: 10px 20px;
+  transition: background-color 0.3s;
+  cursor: pointer;
+  text-transform: none;
+}
+
+.css-md26zr-MuiInputBase-root-MuiOutlinedInput-root {
+  border-radius: 18px !important;
+}
